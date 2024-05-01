@@ -18,7 +18,7 @@ def preprocess_movies(movies):
     movies['overview'] = movies['overview'].astype(str).fillna('')
     return movies
 
-
+# tfidf calc
 def calculate_tfidf_matrix(movies):
     """
     Calculate the TF-IDF matrix for movie overviews.
@@ -34,7 +34,7 @@ def calculate_tfidf_matrix(movies):
     tfidf_matrix = tfidf.fit_transform(movies['overview'])
     return tfidf, tfidf_matrix
 
-
+# cosine similarity calc
 def calculate_cosine_similarity(tfidf_matrix):
     """
     Calculate cosine similarity matrix.
@@ -48,7 +48,7 @@ def calculate_cosine_similarity(tfidf_matrix):
     cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
     return cosine_sim
 
-
+# recommendation obtain
 def get_recommendations(title, indices, cosine_sim, movies):
     """
     Get movie recommendations based on cosine similarity.
@@ -70,10 +70,10 @@ def get_recommendations(title, indices, cosine_sim, movies):
         movie_indices = [i[0] for i in sim_scores]
         return movies['title'].iloc[movie_indices].values
     except KeyError:
-        # Return an empty array if the key does not exist in the index
+        # Return an empty array if the key does not exist in the index (movie not found)
         return []
 
-
+# initialise recommendation process
 def calculate_through_cosine(movies, search_sentence):
     """
     Calculate movie recommendations based on cosine similarity.
@@ -89,15 +89,15 @@ def calculate_through_cosine(movies, search_sentence):
     tfidf, tfidf_matrix = calculate_tfidf_matrix(movies)
     cosine_sim = calculate_cosine_similarity(tfidf_matrix)
 
-    # Create indices series
+    # create indices series
     indices = pd.Series(movies.index, index=movies['title']).drop_duplicates()
 
-    # Get recommendations
+    # get recommendations
     recommendations = get_recommendations(search_sentence, indices, cosine_sim, movies)
     
     return recommendations
 
-
+# user runs to start normal process
 def cosineRecommendation(search_word):
     """
     Initiate the cosine recommendation system
@@ -108,7 +108,7 @@ def cosineRecommendation(search_word):
     # preprocess obtain
     movies = preprocessing.preprocessTMDSet()
     
-    # Consine similarity calc
+    # initialise the process
     recommendations = calculate_through_cosine(movies=movies, search_sentence=search_word)
     
     if len(recommendations) > 0:
@@ -117,7 +117,8 @@ def cosineRecommendation(search_word):
     else:
         print("No recommendations found.")
         return []
-    
+
+# runs evaluative statistic calculations 
 def evaluate_recommendation(recommended, actual_title, actual_list):
     """
     Evaluate the recommendation system using metrics.
@@ -176,13 +177,13 @@ def evaluate_recommendation(recommended, actual_title, actual_list):
     return evaluation_metrics
 
 if __name__ == '__main__':
-    # Actual film and finds similarities
+    # actual film and finds similarities
     title = "The Wolf of Wall Street"
     recommendations = cosineRecommendation(title)
     
-    # Popular films 
+    # popular films 
     actual_movies = ["The Great Gatsby", "The Revenant", "Inception"]
     
-    # Evaluate each recommended movie
+    # evaluate each recommended movie
     evaluation_metrics = evaluate_recommendation(recommendations, title, actual_movies)
     

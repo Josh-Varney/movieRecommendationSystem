@@ -16,13 +16,13 @@ def identifyOutliers(std_limit, train_movies_df):
     Returns:
     - DataFrame: DataFrame containing the outliers.
     """
-    # Exclude non-numeric columns and the 'id' column
+    # exclude non-numeric columns and the 'id' column
     numeric_columns = train_movies_df.drop(columns=['id', 'popularity']).select_dtypes(include='number')
     
     upper_limit = numeric_columns.mean() + std_limit * numeric_columns.std()
     lower_limit = numeric_columns.mean() - std_limit * numeric_columns.std()
     
-    # Align DataFrame
+    # align DF
     numeric_columns, _ = numeric_columns.align(upper_limit, axis=1, copy=False)
     
     outliers = (numeric_columns > upper_limit) | (numeric_columns < lower_limit)

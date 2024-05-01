@@ -4,6 +4,10 @@
 - **ml-25**: coming soon for collaborative filtering.
 - **Please ensure all paths are changed throughout the python files, this should only include `preprocessing.py`**.
 
+# Code Documentation
+
+- This can be review through all `.py` files to understand the functions capabilities and for future expansion purposes.
+
 # User Interface 
 
 This Python script contains basic UI code for eliciting two recommendation features:

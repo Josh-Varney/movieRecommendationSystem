@@ -18,22 +18,22 @@ def preprocessTMDSet():
     Returns:
     - DataFrame: Preprocessed movie dataset.
     """
-    # Load datasets
+    # load datasets
     train_movies_df = pd.read_csv("C:\\Users\\Jrv12\\Desktop\\Recommendation System\\recommendationSystem\\datasets\\tmdb_5000_movies.csv")
     train_credits_df = pd.read_csv("C:\\Users\\Jrv12\\Desktop\\Recommendation System\\recommendationSystem\\datasets\\tmdb_5000_credits.csv")
 
-    # Merge datasets
+    # merge datasets
     movies = train_movies_df.merge(train_credits_df, on="title")
     
-    # Imputation of Missing Values
+    # imputation of Missing Values
     def fillMissingValues():
         movies.fillna({"homepage": -1, "overview": -1, "release_date": -1, "runtime": -1, "tagline": -1}, inplace=True)
     fillMissingValues()
     
-    # Convert release_date to year
+    # convert release_date to year
     movies["release_date"] = movies["release_date"].apply(lambda x: [str(x)[:4]])
     
-    # Convert stringified lists to lists
+    # convert stringified lists to lists
     def convert_to_name(obj):
         return [i["name"] for i in ast.literal_eval(obj)]
     movies["genres"] = movies["genres"].apply(convert_to_name)
@@ -42,7 +42,7 @@ def preprocessTMDSet():
     movies["production_companies"] = movies["production_companies"].apply(convert_to_name)
     movies["spoken_languages"] = movies["spoken_languages"].apply(lambda x: convert_to_name(x)[:3])
     
-    # Extract director from crew
+    # extract director from crew
     def fetch_director(obj):
         for i in ast.literal_eval(obj):
             if i["job"] == "Director":
@@ -50,7 +50,7 @@ def preprocessTMDSet():
         return []
     movies["crew"] = movies["crew"].apply(fetch_director)
     
-    # Remove unreleased movies
+    # remove unreleased movies
     movies = movies[movies['status'] == 'Released']
     
     return movies

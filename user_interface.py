@@ -41,7 +41,7 @@ class SearchWidget(QWidget):
         # get text from search box
         query = self.search_box.text()
 
-        # Validate the input
+        # validation
         if not query:
             # error if empty
             self.show_error_message("Search query cannot be empty.")
@@ -93,6 +93,7 @@ class SearchWidget(QWidget):
         Returns:
             list: The list of filtered movies.
         """
+        # to be implemented
         pass
         
     def display_movies(self, movie_list):
@@ -102,14 +103,14 @@ class SearchWidget(QWidget):
         Args:
             movie_list (list): The list of movies to display.
         """
-        # Clear existing items from the movie list widget
+        # clear existing items from the movie list widget
         self.movie_list.clear()
         
         if not movie_list:
-            # If no movies are recommended, display a message box
+            # no movies are recommended, display a message box
             self.show_info_message("No movies recommended.")
         else:
-            # Add each movie to the movie list widget
+            # add each movie to the movie list widget
             for movie in movie_list:
                 item = QListWidgetItem(movie)
                 self.movie_list.addItem(item)

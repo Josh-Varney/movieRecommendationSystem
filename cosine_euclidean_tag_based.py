@@ -3,7 +3,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics.pairwise import euclidean_distances, cosine_similarity
-import preprocessing  # Assuming this module preprocesses the movie dataset
+import preprocessing 
 import content_euclidean_tag_based
 
 
@@ -54,6 +54,7 @@ def recommend_movies_with_tags(preprocessed_movies, search_sentence):
     return combined_recommendations
 
 
+    
 def evaluate_euclidean_cosine_recommendation(recommended_movies, actual_keyword):
     """
     Evaluate the recommendation system based on keyword tags.
@@ -84,7 +85,7 @@ def evaluate_euclidean_cosine_recommendation(recommended_movies, actual_keyword)
     # false positive calculation
     false_positives = len(recommended_movies) - true_positives
 
-    # Calculate evaluation metrics
+    # evaluation metrics
     precision = true_positives / (true_positives + false_positives) if (true_positives + false_positives) > 0 else 0
     
     recall = true_positives / (true_positives + false_negatives) if (true_positives + false_negatives) > 0 else 0
@@ -105,7 +106,7 @@ def evaluate_euclidean_cosine_recommendation(recommended_movies, actual_keyword)
 
 
 def main():
-    # Obtain preprocessed dataset
+    # preprocessed dataset
     movies = preprocessing.preprocessTMDSet()
     keywords = ['action', 'romance', 'faith', 'beauvois', 'face', 'gods', 'greatest', 'lambert', 'armstrong', 'captive', 'david', 'faith', 'jameson', 'jerry', 'hero', 'immortals', 'danny', 'donner', 'expect', 'faces']
     
