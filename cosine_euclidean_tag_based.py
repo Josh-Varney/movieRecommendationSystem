@@ -105,6 +105,14 @@ def evaluate_euclidean_cosine_recommendation(recommended_movies, actual_keyword)
     return evaluation_metrics
 
 
+def ui_interactions(search_word):
+    movies = preprocessing.preprocessTMDSet()
+    recommendations_df = recommend_movies_with_tags(search_sentence=search_word, preprocessed_movies=movies)
+    
+    titles_1d_array = recommendations_df['title'].tolist()
+    return titles_1d_array
+
+
 def main():
     # preprocessed dataset
     movies = preprocessing.preprocessTMDSet()
@@ -141,3 +149,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+ 

@@ -115,6 +115,7 @@ def filterMovies(keyword, movies):
 
 
 # function for calculating movie recommendations based on search keywords using Euclidean distance
+
 def calculateThroughTags(preprocessed_movies, search_sentence):
     """
     Calculate movie recommendations based on search keywords using Euclidean distance.
@@ -134,21 +135,32 @@ def calculateThroughTags(preprocessed_movies, search_sentence):
     
     movies = movies.dropna(subset=['tags'])
     
-    # TF-IDF matrix
-    tfidf = TfidfVectorizer(stop_words='english')
-    tfidf_matrix = tfidf.fit_transform(movies['tags'])
-    
-    # euclidean distances and sorting
-    euclidean_dist = euclidean_distances(tfidf_matrix, tfidf_matrix)
-    
-    search_idx = movies[movies['tags'].str.contains(search_sentence, case=False)].index[0]
-    
-    similar_movies_idx = euclidean_dist[search_idx].argsort()[1:11]  # Exclude the movie itself
-    recommended_movies = movies.iloc[similar_movies_idx]
-    
-    print(recommended_movies)
-    
-    return recommended_movies
+    if not movies.empty:
+        # TF-IDF matrix
+        tfidf = TfidfVectorizer(stop_words='english')
+        tfidf_matrix = tfidf.fit_transform(movies['tags'])
+        
+        # euclidean distances and sorting
+        euclidean_dist = euclidean_distances(tfidf_matrix, tfidf_matrix)
+        
+        # Check if any movie matches the search sentence
+        matching_movies = movies[movies['tags'].str.contains(search_sentence, case=False)]
+        
+        if not matching_movies.empty:
+            search_idx = matching_movies.index[0]
+            
+            similar_movies_idx = euclidean_dist[search_idx].argsort()[1:11]  # Exclude the movie itself
+            recommended_movies = movies.iloc[similar_movies_idx]
+            
+            print(recommended_movies)
+            
+            return recommended_movies
+        else:
+            print("No movies match the search keyword.")
+            return pd.DataFrame()  # Return an empty DataFrame
+    else:
+        print("No movies available.")
+        return pd.DataFrame()  # Return an empty DataFrame
 
 
 def tagRecommendation(search_word):

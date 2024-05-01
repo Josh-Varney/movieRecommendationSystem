@@ -21,14 +21,17 @@ class SearchWidget(QWidget):
         self.submit_button = QPushButton("Submit")
         self.submit_button.setStyleSheet("font-size: 16px; padding: 10px;")  
         self.movie_list = QListWidget()  # widget list of movies
-        self.checkbox_cosine = QCheckBox("Use Cosine")
-        self.checkbox_cosine.setChecked(True)  # default selection is cosine
+        self.checkbox_cosine = QCheckBox("Use Cosine (Enter a Film from TMD5000)")
+        self.checkbox_cosine.setChecked(False)  # default selection is cosine
+        self.checkbox_cosine_euclidean = QCheckBox("Use Cosine and Euclidean (Enter Keyword e.g., action, gods)")
+        self.checkbox_cosine_euclidean.setChecked(False)  # default selection is cosine
 
         # screen layout
         layout = QVBoxLayout()
         layout.addWidget(self.label)
         layout.addWidget(self.search_box)
-        layout.addWidget(self.checkbox_cosine)  
+        layout.addWidget(self.checkbox_cosine)
+        layout.addWidget(self.checkbox_cosine_euclidean)  
         layout.addWidget(self.submit_button)
         layout.addWidget(self.movie_list) 
 
@@ -44,18 +47,25 @@ class SearchWidget(QWidget):
         # validation
         if not query:
             # error if empty
-            self.show_error_message("Search query cannot be empty.")
+            self.show_error_message("Search query cannot be empty!")
         elif len(query) > 255:
             # error too long
-            self.show_error_message("Search query is too long. Please keep it under 255 characters.")
+            self.show_error_message("Search query is too long. Please keep it under 255 characters!")
+        elif self.checkbox_cosine_euclidean.isChecked() and self.checkbox_cosine.isChecked():
+            self.show_error_message("Cannot check both boxes!")
         else:
-            # selected movie recommedation method
+            # selected movie recommendation method
             if self.checkbox_cosine.isChecked():
-                movie_list = self.filter_query_cosine(query)
+                movie_list = self.filter_query_cosine(query=query)
+            elif self.checkbox_cosine_euclidean.isChecked():
+                movie_list = self.filter_by_both(query=query)
             else:
-                movie_list = self.filter_query_tag(query)
+                movie_list = self.filter_query_tag(query=query)
             
-            self.display_movies(movie_list)
+            if movie_list:
+                self.display_movies(movie_list)
+            else:
+                self.show_error_message("No movies found matching the search criteria.")
 
     def filter_query_cosine(self, query):
         """
@@ -93,8 +103,7 @@ class SearchWidget(QWidget):
         Returns:
             list: The list of filtered movies.
         """
-        # to be implemented
-        pass
+        return cosine_euclidean.ui_interactions(query)
         
     def display_movies(self, movie_list):
         """
