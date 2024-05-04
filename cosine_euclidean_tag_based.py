@@ -1,5 +1,6 @@
 import pandas as pd
 import time
+import tracemalloc
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import MinMaxScaler
@@ -146,10 +147,18 @@ def main():
     keywords = ['action', 'romance', 'faith', 'beauvois', 'face', 'gods', 'greatest', 'lambert', 'armstrong', 'captive', 'david', 'faith', 'jameson', 'jerry', 'hero', 'immortals', 'danny', 'donner', 'expect', 'faces']
     
     # One Iteration Time
+    tracemalloc.start()
+    
     start_time = time.time()
     recommend_movies_with_tags(movies, 'face')
     end_time = time.time()
+    
+    current_memory, peak_memory = tracemalloc.get_traced_memory()
     print(f'One Iteration Time: {end_time-start_time}')
+    print(f"Peak memory usage: {peak_memory / (1024 * 1024)} MB")
+    
+    tracemalloc.stop()
+    
     
     k = 5  # Number of folds for cross-validation
     avg_metrics = k_fold_cross_validation(movies, keywords, k)

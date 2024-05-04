@@ -1,4 +1,5 @@
 import time
+import tracemalloc
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.model_selection import KFold
@@ -288,10 +289,12 @@ if __name__ == '__main__':
     movies = preprocessing.preprocessTMDSet()
 
     # One iteration time
+    tracemalloc.start()
     start_time = time.time()
     pretend_recommendation = tagRecommendation('captive')
     end_time = time.time()
-    
+    current_memory, peak_memory = tracemalloc.get_traced_memory()
+    print(f'Peak Memory: {peak_memory / (1024 * 1024)} MB')
     print(f'One Iteration: {end_time - start_time}')
     
     # Number of folds for cross-validation

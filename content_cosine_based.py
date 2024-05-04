@@ -1,4 +1,5 @@
 import time
+import tracemalloc
 import preprocessing
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -180,10 +181,14 @@ if __name__ == '__main__':
     title = "The Wolf of Wall Street"
     
     # One Iteration Time 
+    
+    tracemalloc.start()
     start_time = time.time()
     recommendations = cosineRecommendation(title)
     end_time = time.time()
+    current_memory, peak_memory = tracemalloc.get_traced_memory()
     print(f'One Iteration Time: {end_time-start_time}')
+    print(f'Peak Memory {peak_memory / (1024*1024)}')
 
     # popular films
     actual_movies = ["The Great Gatsby", "The Revenant", "Inception"]
