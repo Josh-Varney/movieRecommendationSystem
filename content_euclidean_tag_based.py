@@ -1,5 +1,7 @@
+import time
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+from sklearn.model_selection import KFold
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics.pairwise import euclidean_distances
 import preprocessing  
@@ -180,7 +182,6 @@ def tagRecommendation(search_word):
     
     return titles_1d_array
 
-
 def evaluate_tag_recommendation(recommended_movies, actual_keyword):
     """
     Evaluate the recommendation system based on keyword tags.
@@ -230,51 +231,69 @@ def evaluate_tag_recommendation(recommended_movies, actual_keyword):
     
     return evaluation_metrics
 
-# run evaluation
-def EvalRecommendation(search_word):
+# run evaluation with k-fold cross-validation
+def evaluate_with_k_fold(movies, keywords, k):
     """
-    Initiate the Tag Filtering.
+    Evaluate the recommendation system based on keyword tags using k-fold cross-validation.
+
+    Args:
+    - movies (DataFrame): Preprocessed movie dataset.
+    - keywords (list): List of keywords for evaluation.
+    - k (int): Number of folds for cross-validation.
 
     Returns:
-    - List: Top-rated movies based on Cosine Tag Analysis
+    - dict: Dictionary containing average evaluation metrics across all folds.
     """
-    # preprocess movie dataset
-    movies = preprocessing.preprocessTMDSet()
+    avg_metrics = {metric: 0 for metric in ['Precision', 'Recall', 'F1 Score', 'Accuracy']}
     
-    recommendations_df = calculateThroughTags(movies, search_word)
+    # Initialize k-fold cross-validation
+    kf = KFold(n_splits=k)
     
-    return recommendations_df
+    start_time = time.time()
+    for fold, (train_index, test_index) in enumerate(kf.split(keywords), 1):
+        print(f'Fold {fold}/{k}:')
+        train_keywords = [keywords[i] for i in train_index]
+        test_keywords = [keywords[i] for i in test_index]
+        
+        fold_metrics = {metric: 0 for metric in ['Precision', 'Recall', 'F1 Score', 'Accuracy']}
+        
+        # Evaluate each keyword in the training set
+        for key in train_keywords:
+            recommendations = calculateThroughTags(movies, key)  
+            metrics = evaluate_tag_recommendation(recommendations, key) 
+            for metric in fold_metrics:
+                fold_metrics[metric] += metrics[metric]
+        
+        # Average metrics across all training keywords
+        for metric in fold_metrics:
+            fold_metrics[metric] /= len(train_keywords)
+        
+        # Update average metrics across all folds
+        for metric in avg_metrics:
+            avg_metrics[metric] += fold_metrics[metric]
+    
+    end_time = time.time()
+    print(f'Test time: {end_time-start_time}')
+    # Average metrics across all folds
+    for metric in avg_metrics:
+        avg_metrics[metric] /= k
+    
+    return avg_metrics
 
 
 if __name__ == '__main__':
-    # keywords for evaluation
+    # Keywords for evaluation
     keywords = ['action', 'romance', 'faith', 'beauvois', 'face', 'gods', 'greatest', 'lambert', 'armstrong', 'captive', 'david', 'faith', 'jameson', 'jerry', 'hero', 'immortals', 'danny', 'donner', 'expect', 'faces']
     
-    # average metrics
-    avg_precision = 0
-    avg_recall = 0
-    avg_f1_score = 0
-    avg_accuracy = 0
+    # Preprocess movie dataset
+    movies = preprocessing.preprocessTMDSet()
     
-    for count, key in enumerate(keywords, 1):
-        print(f'Epoch {count}/{len(keywords)}: {key}')
-        recommendations = EvalRecommendation(key)  
-        metrics = evaluate_tag_recommendation(recommendations, key) 
-        
-        print(f'Recommended movies for keyword "{key}":')
-        print(recommendations[['title', 'vote_average', 'tags']])
-            
-        avg_precision += metrics['Precision']
-        avg_recall += metrics['Recall']
-        avg_f1_score += metrics['F1 Score']
-        avg_accuracy += metrics['Accuracy']
+    # Number of folds for cross-validation
+    k = 5
     
-    avg_precision /= len(keywords)
-    avg_recall /= len(keywords)
-    avg_f1_score /= len(keywords)
-    avg_accuracy /= len(keywords)
+    # Evaluate with k-fold cross-validation
+    avg_metrics = evaluate_with_k_fold(movies, keywords, k)
     
-    print('Average Precision: ', avg_precision)
-    print('Average Recall: ', avg_recall)
-    print('Average F1 Score: ', avg_f1_score)
-    print('Average Accuracy: ', avg_accuracy)
+    # Print average metrics
+    print('Average Metrics:')
+    print(avg_metrics)

@@ -1,8 +1,10 @@
 import pandas as pd
+import time
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics.pairwise import euclidean_distances, cosine_similarity
+from sklearn.model_selection import KFold
 import preprocessing 
 import content_euclidean_tag_based
 
@@ -54,8 +56,15 @@ def recommend_movies_with_tags(preprocessed_movies, search_sentence):
     return combined_recommendations
 
 
+def ui_interactions(search_word):
+    movies = preprocessing.preprocessTMDSet()
+    recommendations_df = recommend_movies_with_tags(search_sentence=search_word, preprocessed_movies=movies)
     
-def evaluate_euclidean_cosine_recommendation(recommended_movies, actual_keyword):
+    titles_1d_array = recommendations_df['title'].tolist()
+    return titles_1d_array
+
+
+def evaluate_model(recommended_movies, actual_keyword):
     """
     Evaluate the recommendation system based on keyword tags.
 
@@ -87,11 +96,8 @@ def evaluate_euclidean_cosine_recommendation(recommended_movies, actual_keyword)
 
     # evaluation metrics
     precision = true_positives / (true_positives + false_positives) if (true_positives + false_positives) > 0 else 0
-    
     recall = true_positives / (true_positives + false_negatives) if (true_positives + false_negatives) > 0 else 0
-    
     f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
-    
     accuracy = true_positives / len(recommended_movies) if len(recommended_movies) > 0 else 0
 
     # dict of evaluation metrics
@@ -104,49 +110,51 @@ def evaluate_euclidean_cosine_recommendation(recommended_movies, actual_keyword)
     
     return evaluation_metrics
 
-
-def ui_interactions(search_word):
-    movies = preprocessing.preprocessTMDSet()
-    recommendations_df = recommend_movies_with_tags(search_sentence=search_word, preprocessed_movies=movies)
+def k_fold_cross_validation(movies, keywords, k):
+    kf = KFold(n_splits=k)
+    avg_metrics = {metric: 0 for metric in ['Precision', 'Recall', 'F1 Score', 'Accuracy']}
     
-    titles_1d_array = recommendations_df['title'].tolist()
-    return titles_1d_array
-
+    count = 0 
+    start_time = time.time()
+    for train_index, test_index in kf.split(keywords):
+        print(f'Epoch: {count+1}/{k}')
+        train_keywords = [keywords[i] for i in train_index]
+        test_keyword = keywords[test_index[0]]  # Select one keyword for testing
+        
+        avg_metrics_fold = {metric: 0 for metric in ['Precision', 'Recall', 'F1 Score', 'Accuracy']}
+        for key in train_keywords:
+            recommendations = recommend_movies_with_tags(movies, key)
+            metrics = evaluate_model(recommendations, key)
+            for metric in avg_metrics_fold:
+                avg_metrics_fold[metric] += metrics[metric]
+        
+        for metric in avg_metrics_fold:
+            avg_metrics_fold[metric] /= len(train_keywords)  # Average metrics across all training keywords
+            avg_metrics[metric] += avg_metrics_fold[metric]
+            
+        count += 1
+    
+    end_time = time.time()
+    print(f'Test Time: {end_time-start_time}')
+    for metric in avg_metrics:
+        avg_metrics[metric] /= k  # Average metrics across all folds
+    
+    return avg_metrics
 
 def main():
-    # preprocessed dataset
+    # Preprocessed dataset
     movies = preprocessing.preprocessTMDSet()
     keywords = ['action', 'romance', 'faith', 'beauvois', 'face', 'gods', 'greatest', 'lambert', 'armstrong', 'captive', 'david', 'faith', 'jameson', 'jerry', 'hero', 'immortals', 'danny', 'donner', 'expect', 'faces']
     
-    avg_precision = 0
-    avg_recall = 0
-    avg_f1_score = 0
-    avg_accuracy = 0
+    k = 5  # Number of folds for cross-validation
+    avg_metrics = k_fold_cross_validation(movies, keywords, k)
     
-    for count, key in enumerate(keywords, 1):
-        print(f'Epoch {count}/{len(keywords)}: {key}')
-        recommendations = recommend_movies_with_tags(movies, key)  
-        metrics = evaluate_euclidean_cosine_recommendation(recommendations, key)  
-        
-        print(f'Recommended movies for keyword "{key}":')
-        print(recommendations[['title', 'vote_average', 'tags']])
-        
-        avg_precision += metrics['Precision']
-        avg_recall += metrics['Recall']
-        avg_f1_score += metrics['F1 Score']
-        avg_accuracy += metrics['Accuracy']
-    
-    avg_precision /= len(keywords)
-    avg_recall /= len(keywords)
-    avg_f1_score /= len(keywords)
-    avg_accuracy /= len(keywords)
-    
-    print('Average Precision: ', avg_precision)
-    print('Average Recall: ', avg_recall)
-    print('Average F1 Score: ', avg_f1_score)
-    print('Average Accuracy: ', avg_accuracy)
-
+    print('Average Precision:', avg_metrics['Precision'])
+    print('Average Recall:', avg_metrics['Recall'])
+    print('Average F1 Score:', avg_metrics['F1 Score'])
+    print('Average Accuracy:', avg_metrics['Accuracy'])
 
 if __name__ == '__main__':
     main()
+
  

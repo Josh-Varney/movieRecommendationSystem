@@ -19,8 +19,8 @@ def preprocessTMDSet():
     - DataFrame: Preprocessed movie dataset.
     """
     # load datasets
-    train_movies_df = pd.read_csv("C:\\Users\\Jrv12\\Desktop\\Recommendation System\\recommendationSystem\\datasets\\tmdb_5000_movies.csv")
-    train_credits_df = pd.read_csv("C:\\Users\\Jrv12\\Desktop\\Recommendation System\\recommendationSystem\\datasets\\tmdb_5000_credits.csv")
+    train_movies_df = pd.read_csv("/Users/josh-v/Documents/Practical Folder/recommendationSystem/movieRecommendationSystem/datasets/tmdb_dataset/tmdb_5000_movies.csv")
+    train_credits_df = pd.read_csv("/Users/josh-v/Documents/Practical Folder/recommendationSystem/movieRecommendationSystem/datasets/tmdb_dataset/tmdb_5000_credits.csv")
 
     # merge datasets
     movies = train_movies_df.merge(train_credits_df, on="title")

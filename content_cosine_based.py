@@ -2,6 +2,7 @@ import preprocessing
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
+from sklearn.model_selection import KFold
 
 
 def preprocess_movies(movies):
@@ -119,52 +120,48 @@ def cosineRecommendation(search_word):
         return []
 
 # runs evaluative statistic calculations 
-def evaluate_recommendation(recommended, actual_title, actual_list):
+def evaluate_recommendation(recommended, actual_title, actual_list, k=5):
     """
-    Evaluate the recommendation system using metrics.
+    Evaluate the recommendation system using k-fold cross-validation.
 
     Args:
     - recommended (list): List of recommended movie titles.
     - actual_title (str): Title of the actual movie.
     - actual_list (list): List of actual movie titles.
+    - k (int): Number of folds for k-fold cross-validation.
 
     Returns:
     - dict: Dictionary containing evaluation metrics.
     """
-    print('This make take several minutes')
+    kf = KFold(n_splits=k)
     true_positives = 0
     false_positives = 0
     false_negatives = 0
     
     count = 0
-    for film in recommended:
-        boolval = False
+    for train_index, test_index in kf.split(recommended):
+        print(f'Epoch: {count+1} / {k}')
+        train_data = [recommended[i] for i in train_index]
+        test_data = [recommended[i] for i in test_index]
+        
+        for film in test_data:
+            boolval = False
+            # if the actual movie is in the recommended list check
+            if actual_title in cosineRecommendation(film) and not boolval:
+                true_positives += 1
+                boolval = True
+            elif film in actual_list or not boolval:
+                false_positives += 1
+            else:
+                false_negatives += 1
         count += 1
-        
-        print(f'Epoch {count}/{len(recommended)}: ')
-        
-        new_recommendations = cosineRecommendation(film)
-        print(new_recommendations)
-        
-        # if the actual movie is in the recommended list check
-        if actual_title in new_recommendations and not boolval:
-            true_positives += 1
-            boolval = True
-        elif film in actual_list or not boolval:
-            false_positives += 1
-        else:
-            false_negatives += 1
     
-    # calc metrics
+    # calculation of metrics
     precision = true_positives / (true_positives + false_positives) if (true_positives + false_positives) > 0 else 0
-    
     recall = true_positives / (true_positives + false_negatives) if (true_positives + false_negatives) > 0 else 0
-    
     f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
-    
     accuracy = true_positives / len(recommended) if recommended else 0
     
-    # dict evaluation metrics
     evaluation_metrics = {
         "Precision": precision,
         "Recall": recall,
@@ -172,18 +169,22 @@ def evaluate_recommendation(recommended, actual_title, actual_list):
         "Accuracy": accuracy
     }
     
-    print(evaluation_metrics)
-    
     return evaluation_metrics
 
 if __name__ == '__main__':
     # actual film and finds similarities
     title = "The Wolf of Wall Street"
     recommendations = cosineRecommendation(title)
-    
-    # popular films 
+
+    # popular films
     actual_movies = ["The Great Gatsby", "The Revenant", "Inception"]
-    
-    # evaluate each recommended movie
-    evaluation_metrics = evaluate_recommendation(recommendations, title, actual_movies)
+
+    # evaluate using k-fold cross-validation
+    evaluation_metrics = evaluate_recommendation(recommended=recommendations,
+                                                  actual_title=title,
+                                                  actual_list=actual_movies,
+                                                  k=5)
+
+    print("Evaluation Metrics:")
+    print(evaluation_metrics)
     
