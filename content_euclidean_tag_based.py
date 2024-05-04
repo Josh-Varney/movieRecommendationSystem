@@ -271,7 +271,6 @@ def evaluate_with_k_fold(movies, keywords, k):
         # Update average metrics across all folds
         for metric in avg_metrics:
             avg_metrics[metric] += fold_metrics[metric]
-    
     end_time = time.time()
     print(f'Test time: {end_time-start_time}')
     # Average metrics across all folds
@@ -287,6 +286,13 @@ if __name__ == '__main__':
     
     # Preprocess movie dataset
     movies = preprocessing.preprocessTMDSet()
+
+    # One iteration time
+    start_time = time.time()
+    pretend_recommendation = tagRecommendation('captive')
+    end_time = time.time()
+    
+    print(f'One Iteration: {end_time - start_time}')
     
     # Number of folds for cross-validation
     k = 5

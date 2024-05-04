@@ -1,3 +1,4 @@
+import time
 import preprocessing
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -139,6 +140,7 @@ def evaluate_recommendation(recommended, actual_title, actual_list, k=5):
     false_negatives = 0
     
     count = 0
+    start_time = time.time()
     for train_index, test_index in kf.split(recommended):
         print(f'Epoch: {count+1} / {k}')
         train_data = [recommended[i] for i in train_index]
@@ -155,6 +157,8 @@ def evaluate_recommendation(recommended, actual_title, actual_list, k=5):
             else:
                 false_negatives += 1
         count += 1
+    end_time = time.time()
+    print(f'Test Time: {end_time-start_time}')
     
     # calculation of metrics
     precision = true_positives / (true_positives + false_positives) if (true_positives + false_positives) > 0 else 0
@@ -174,7 +178,12 @@ def evaluate_recommendation(recommended, actual_title, actual_list, k=5):
 if __name__ == '__main__':
     # actual film and finds similarities
     title = "The Wolf of Wall Street"
+    
+    # One Iteration Time 
+    start_time = time.time()
     recommendations = cosineRecommendation(title)
+    end_time = time.time()
+    print(f'One Iteration Time: {end_time-start_time}')
 
     # popular films
     actual_movies = ["The Great Gatsby", "The Revenant", "Inception"]

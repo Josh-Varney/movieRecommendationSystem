@@ -133,7 +133,6 @@ def k_fold_cross_validation(movies, keywords, k):
             avg_metrics[metric] += avg_metrics_fold[metric]
             
         count += 1
-    
     end_time = time.time()
     print(f'Test Time: {end_time-start_time}')
     for metric in avg_metrics:
@@ -145,6 +144,12 @@ def main():
     # Preprocessed dataset
     movies = preprocessing.preprocessTMDSet()
     keywords = ['action', 'romance', 'faith', 'beauvois', 'face', 'gods', 'greatest', 'lambert', 'armstrong', 'captive', 'david', 'faith', 'jameson', 'jerry', 'hero', 'immortals', 'danny', 'donner', 'expect', 'faces']
+    
+    # One Iteration Time
+    start_time = time.time()
+    recommend_movies_with_tags(movies, 'face')
+    end_time = time.time()
+    print(f'One Iteration Time: {end_time-start_time}')
     
     k = 5  # Number of folds for cross-validation
     avg_metrics = k_fold_cross_validation(movies, keywords, k)
